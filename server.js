@@ -11,6 +11,15 @@ var app = express();
 var cors = require('cors');
 app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
 
+const requestIp = require("request-ip");
+// inside middleware handler
+var ipMiddleware = function(req, res, next) {
+ const clientIp = requestIp.getClientIp(req); 
+ next();
+};
+//As Connect Middleware
+app.use(requestIp.mw())
+
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
 
@@ -25,7 +34,16 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-
+app.get("/api/whoami", (req, res) => {
+  let ipaddress = req.clientIp;
+  let language = req.acceptsLanguages();
+  let software=req.get("User-Agent");
+  res.json({
+   ipaddress: ipaddress,
+   language:language[0],
+   software:software
+  });
+});
 
 // listen for requests :)
 var listener = app.listen(process.env.PORT, function () {
